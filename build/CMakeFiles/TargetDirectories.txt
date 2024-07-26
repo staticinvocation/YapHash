@@ -1,3 +1,0 @@
-C:/Users/bheinonen/YapHash/build/CMakeFiles/YapHash.dir
-C:/Users/bheinonen/YapHash/build/CMakeFiles/edit_cache.dir
-C:/Users/bheinonen/YapHash/build/CMakeFiles/rebuild_cache.dir
