@@ -62,9 +62,9 @@ void WaveLash::CalcHash(const Audio& rAudio, Parameter* pParam)
 	EnergyInWindows(e, rAudio.samples(), rAudio.length(), pParam->windowSize, pParam->stepSize);
 
 	// VARIANCE
-	Fw32f** variance = new Fw32f *[stwt.mNoOfWindows];
+	Ipp32f** variance = new Ipp32f *[stwt.mNoOfWindows];
 	for (int i = 0; i < stwt.mNoOfWindows; i++)
-		variance[i] = new Fw32f[HashBitLength];
+		variance[i] = new Ipp32f[HashBitLength];
 
 	CalculateVariance(&variance, stwt);
 
@@ -85,7 +85,7 @@ void WaveLash::CalcHash(const Audio& rAudio, Parameter* pParam)
 	}
 
 	// ZEROCROSSINGRATE
-	Fw32f* zeroCrossingRate = new Fw32f[stwt.mNoOfWindows];
+	Ipp32f* zeroCrossingRate = new Ipp32f[stwt.mNoOfWindows];
 
 	CalculateZeroCrossingRate(&zeroCrossingRate, stwt, pParam->debugLevel);
 
@@ -186,7 +186,7 @@ void WaveLash::CalcHash(const Audio& rAudio, Parameter* pParam)
 	free(e);
 }
 
-void WaveLash::CalculateVariance(Fw32f ***result, Stwt &stwt)
+void WaveLash::CalculateVariance(Ipp32f ***result, Stwt &stwt)
 {
 	int NumCoeff = 0;
 
@@ -194,20 +194,20 @@ void WaveLash::CalculateVariance(Fw32f ***result, Stwt &stwt)
 	int k = 0; // counter for variance
     int km = 0; // counter for mean
 
-    Fw32f meantotal = 0.0;
-	Fw32f mean = 0.0;
-	Fw32f temp = 0.0;
+    Ipp32f meantotal = 0.0;
+	Ipp32f mean = 0.0;
+	Ipp32f temp = 0.0;
 
 	// mean value
 	// mean = 0.0;
 	for (int z = 0; z < stwt.mNoOfWindows; z++)
 	{
-		for (int j = 0; j < stwt.mFwtLen; j++)
+		for (int j = 0; j < stwt.mIpptLen; j++)
 		{
 			meantotal += stwt.mSpectrogramm[z][j];
 		}
 	}
-	meantotal /= (stwt.mNoOfWindows * stwt.mFwtLen);
+	meantotal /= (stwt.mNoOfWindows * stwt.mIpptLen);
     
     // cout << "meantotal= "<< meantotal << endl;
 
@@ -225,14 +225,14 @@ void WaveLash::CalculateVariance(Fw32f ***result, Stwt &stwt)
             
             if (i < (int)pow(2.0,(double)(mFactor)))
 			{
-				NumCoeff = (int)(stwt.mFwtLen / pow(2.0,(double)(stwt.mJ)) / mStep);
+				NumCoeff = (int)(stwt.mIpptLen / pow(2.0,(double)(stwt.mJ)) / mStep);
 			}
 			else
 			{
 				if (!(i % mStep))
 					c++;
                 
-				NumCoeff = (int)(stwt.mFwtLen / pow(2.0,(double)(stwt.mJ - c)) / mStep);
+				NumCoeff = (int)(stwt.mIpptLen / pow(2.0,(double)(stwt.mJ - c)) / mStep);
 			}
             
 			// mean
@@ -264,17 +264,17 @@ void WaveLash::CalculateVariance(Fw32f ***result, Stwt &stwt)
 	}
 }
 
-void WaveLash::CalculateZeroCrossingRate(Fw32f **result, Stwt &stwt, int debugLevel)
+void WaveLash::CalculateZeroCrossingRate(Ipp32f **result, Stwt &stwt, int debugLevel)
 {
 	int a1 = 0;
 	int a2 = 0;
-	int NumLowPassCoeff = stwt.mFwtLen/(int)pow(2.0,(double)stwt.mJ);
+	int NumLowPassCoeff = stwt.mIpptLen/(int)pow(2.0,(double)stwt.mJ);
     if (debugLevel > 2)
 	{
       cout << "<INFO> NumLowPassCoeff=" << NumLowPassCoeff << endl;
     }
-	Fw32f zcr_mean = 0.0;
-	Fw32f temp = 0.0;
+	Ipp32f zcr_mean = 0.0;
+	Ipp32f temp = 0.0;
 
 	// mean value
 	zcr_mean = 0.0;
@@ -308,7 +308,7 @@ void WaveLash::CalculateZeroCrossingRate(Fw32f **result, Stwt &stwt, int debugLe
 	for (int z = 0; z < stwt.mNoOfWindows; z++)
 	{
 		temp = 0.0;
-	//	for (int j = 1; j < stwt.mFwtLen/NumLowPassCoeff ; j++) // pow(2.0,(double)stwt.mJ + 3) ??? modified knospe
+	//	for (int j = 1; j < stwt.mIpptLen/NumLowPassCoeff ; j++) // pow(2.0,(double)stwt.mJ + 3) ??? modified knospe
         for (int j = 1; j < NumLowPassCoeff ; j++) 
 		{
 			if (stwt.mSpectrogramm[z][j] >= 0)

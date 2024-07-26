@@ -70,23 +70,23 @@ void MelFb::calcMelFB()
 {
     
     // size of frequency bins in Hz => fs/fftsize 
-    Fw32f binSize = SAMPLE_RATE/(fbSize*2.0f-1); 
+    Ipp32f binSize = SAMPLE_RATE/(fbSize*2.0f-1); 
     // centerfrequncy of bands
-    Fw32f *fCenter = fwsMalloc_32f(numFilterBanks);
+    Ipp32f *fCenter = ippsMalloc_32f(numFilterBanks);
     // lower bounds of bands
-    fLo = fwsMalloc_32f(numFilterBanks);
+    fLo = ippsMalloc_32f(numFilterBanks);
     // higher bounds of bands
-    fHi = fwsMalloc_32f(numFilterBanks);
+    fHi = ippsMalloc_32f(numFilterBanks);
     // mel-equidistant delta between centerfrequencies
-    Fw32f delta = (Fw32f)(linToMel(hiCut) - linToMel(loCut)) / (numFilterBanks + 1);
+    Ipp32f delta = (Ipp32f)(linToMel(hiCut) - linToMel(loCut)) / (numFilterBanks + 1);
     
     // multidimensional array for filterbank
-    fbank = new Fw32f *[numFilterBanks]; // alloc some pointers ...
+    fbank = new Ipp32f *[numFilterBanks]; // alloc some pointers ...
     for (int i = 0; i < numFilterBanks ; i++) 
-        fbank[i] = new Fw32f[fbSize]; // ... and alloc an array for each pointer   
+        fbank[i] = new Ipp32f[fbSize]; // ... and alloc an array for each pointer   
     
     // get mel equidistant center frequencies
-    Fw32f melCenter = linToMel(loCut);
+    Ipp32f melCenter = linToMel(loCut);
     fLo[0] = roundf(loCut/binSize);    
     
     for (int i=0; i<numFilterBanks; i++) 
@@ -105,7 +105,7 @@ void MelFb::calcMelFB()
     fHi[numFilterBanks-1] = hiCut/binSize;
     
     // calc triangular filter for each band
-    Fw32f x=0;
+    Ipp32f x=0;
     for (int band=0; band<numFilterBanks; band++) 
     {
         for (int k=0; k<fbSize; k++) 
@@ -125,12 +125,12 @@ void MelFb::calcMelFB()
     }
     
     // free memory   
-    fwsFree(fCenter);
+    ippsFree(fCenter);
 
 }
 
 
-void MelFb::applyMelFB(Fw32f **output, const Stft& stft)
+void MelFb::applyMelFB(Ipp32f **output, const Stft& stft)
 {
     // the non-sparse way:
     //   IppStatus error = ippStsNoErr;
@@ -153,8 +153,8 @@ void MelFb::applyMelFB(Fw32f **output, const Stft& stft)
     
     // the "sparse" way is about 3-4x faster
     int maxFilterSize = (int)(ceil(fHi[numFilterBanks-1]) - floor(fLo[numFilterBanks-1]));
-    Fw32f *filterSparse = fwsMalloc_32f(maxFilterSize);
-    Fw32f *frameSparse = fwsMalloc_32f(maxFilterSize);
+    Ipp32f *filterSparse = ippsMalloc_32f(maxFilterSize);
+    Ipp32f *frameSparse = ippsMalloc_32f(maxFilterSize);
     
     int filterSize = 0;
     int loF = 0; 
@@ -165,22 +165,22 @@ void MelFb::applyMelFB(Fw32f **output, const Stft& stft)
             
             filterSize = (int) (ceil(fHi[band]) - floor(fLo[band]));
             loF = (int)floor(fLo[band]);
-            fwsZero_32f(filterSparse, maxFilterSize);
-            fwsZero_32f(frameSparse, maxFilterSize);
+            ippsZero_32f(filterSparse, maxFilterSize);
+            ippsZero_32f(frameSparse, maxFilterSize);
             
             // copy window to frame-buffer
-            fwsCopy_32f(&stft.spectrogramm[window][loF], frameSparse, filterSize);
+            ippsCopy_32f(&stft.spectrogramm[window][loF], frameSparse, filterSize);
             // copy "sparse" filter from lo freq to hi freq
-            fwsCopy_32f(&fbank[band][loF], filterSparse, filterSize);
+            ippsCopy_32f(&fbank[band][loF], filterSparse, filterSize);
             // multiply spectrum with sparse filterbank
-            fwsMul_32f_I(frameSparse, filterSparse, filterSize);
+            ippsMul_32f_I(frameSparse, filterSparse, filterSize);
             // sum 
-            fwsSum_32f(filterSparse, filterSize, &output[window][band], fwAlgHintFast);
+            ippsSum_32f(filterSparse, filterSize, &output[window][band], ippAlgHintFast);
         }
     }
     
-    fwsFree(filterSparse);
-    fwsFree(frameSparse);
+    ippsFree(filterSparse);
+    ippsFree(frameSparse);
     //ippsFree(filter);
     //ippsFree(frame);   
     //    if (error) 
@@ -188,26 +188,26 @@ void MelFb::applyMelFB(Fw32f **output, const Stft& stft)
 }
 
 #ifdef BARK
-Fw32f MelFb::linToMel(Fw32f linFreq)
+Ipp32f MelFb::linToMel(Ipp32f linFreq)
 {
     // b = 26.81f/(1960+f) - 0.53
     return (26.81f*linFreq / (1960.0f+linFreq) -0.53f);
 }
 
-Fw32f MelFb::melToLin(Fw32f linFreq)
+Ipp32f MelFb::melToLin(Ipp32f linFreq)
 {
     // f = - 490(53+100b)/(-657+25*b)
     return (- 490.0f*(53.0f+100.0f*linFreq)/(-657.0f+25.0*linFreq));
 }
 
 #else
-Fw32f MelFb::linToMel(Fw32f linFreq)
+Ipp32f MelFb::linToMel(Ipp32f linFreq)
 {
     // m = 2595 * log10(1+f/700)
     return (2595.0f * (logf(1.0f + linFreq / 700.0f) / logf(10.0f)));
 }
 
-Fw32f MelFb::melToLin(Fw32f linFreq)
+Ipp32f MelFb::melToLin(Ipp32f linFreq)
 {
     // f = (m/2595)*10
     return (700.0f * (powf(10.0f, (linFreq / 2595.0f)) - 1.0f));

@@ -23,11 +23,11 @@
 #ifndef _STFT_H_
 #define _STFT_H_
 
-#include "fwBase.h"
-#include "fwSignal.h"
+#include <ipp/ipp.h>
 #include "Audio.h"
+#include <fftw/fftw3.h>
+
 //#include <complex.h>
-#include <fftw3.h>
 
 class Stft{
     
@@ -53,7 +53,7 @@ public:
     // destructor
     ~Stft();
     
-    Fw32f **spectrogramm;  // Short time fourier transformation
+    Ipp32f **spectrogramm;  // Short time fourier transformation
     int fftLen;
     int NoOfWindows;
     
@@ -93,7 +93,7 @@ void CopyConvertAndMultiply(float *inAudio, double* windowedAudio, double* hammi
  * @param spectrum
  * @param N size of full spectrum
  */
-void PowerSpectrum(Fw32f* power_spectrum, fftw_complex* spectrum, int N);
+void PowerSpectrum(Ipp32f* power_spectrum, fftw_complex* spectrum, int N);
 
 
 #endif

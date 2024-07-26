@@ -26,7 +26,6 @@
 #define _MEL_FB_H_
 
 #include "Stft.h"
-#include "Stwt.h"
 
 class MelFb{
     
@@ -57,10 +56,10 @@ public:
 	 * @param output the spectrogram multiplied with the mel filter bank
 	 * @param stft input object, the spectrogram and its length
 	 */
-	void applyMelFB(Fw32f **output, const Stft& stft);
+	void applyMelFB(Ipp32f **output, const Stft& stft);
 
 	// TODO: getter methoden
-	Fw32f **fbank;
+	Ipp32f **fbank;
     
 	int fbSize;
 	int numFilterBanks;
@@ -68,21 +67,21 @@ public:
 	int hiCut;
     
 private:
-	Fw32f *fLo;
-	Fw32f *fHi;
+	Ipp32f *fLo;
+	Ipp32f *fHi;
     
 	/**
 	 * helper tool to calculate linear value from "logarithmic" mel value
 	 * @param lin linear input
 	 * @return mel value
 	 */
-	Fw32f linToMel(Fw32f lin);
+	Ipp32f linToMel(Ipp32f lin);
 	/**
 	 * helper tool to calculate "logarithmic" mel value from linear value
 	 * @param mel input
 	 * @return linear value
 	 */
-	Fw32f melToLin(Fw32f mel);
+	Ipp32f melToLin(Ipp32f mel);
     
 };
 

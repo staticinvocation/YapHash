@@ -27,7 +27,7 @@
 #include "YapHash.h"
 #include <iostream>
 #include "VIATUtilities.h"
-#include "fftw3.h"
+#include <fftw/fftw3.h>
 
 #ifndef __APPLE__
 #include <malloc.h>
@@ -117,24 +117,24 @@ void YapHash::calcHash(const Audio& audio, MelFb melBank, Parameter *param)
     
     // logarithmus naturalis of spectrogram
     for (int j=0; j<stft.NoOfWindows; j++) {
-        fwsLn_32f_I(stft.spectrogramm[j], stft.fftLen/2);
+        ippsLn_32f_I(stft.spectrogramm[j], stft.fftLen/2);
     }
     // Apply mel filterbank and write to buffer
     melBank.applyMelFB(melLogSpec.data, stft);  
     
     // MFCC => LN + DCT
-    Fw64f *pMel = fwsMalloc_64f(melLogSpec.rows);
-    Fw64f *pTmp = fwsMalloc_64f(mfccCoeffs);
+    Ipp64f *pMel = ippsMalloc_64f(melLogSpec.rows);
+    Ipp64f *pTmp = ippsMalloc_64f(mfccCoeffs);
     
     // the real to real fft plan, Type II DCT
     fftw_plan p = fftw_plan_r2r_1d(mfccCoeffs, pMel, pTmp, FFTW_REDFT10 ,FFTW_ESTIMATE);    
     
     for (int i=0; i<melSpec.cols; i++) {
-        fwsConvert_32f64f(melLogSpec.data[i], pMel, melLogSpec.rows);
+        ippsConvert_32f64f(melLogSpec.data[i], pMel, melLogSpec.rows);
         // dct
         fftw_execute(p); 
         // copy all coeffs but C(0)
-        fwsConvert_64f32f(&pTmp[1], &mfcc.data[i][0], mfccCoeffs-1);
+        ippsConvert_64f32f(&pTmp[1], &mfcc.data[i][0], mfccCoeffs-1);
         
         if (param->debugLevel > 2){
             debug2DToCSV("debugMfcc.csv", &mfcc, stft.NoOfWindows, mfccCoeffs-1);
@@ -143,20 +143,20 @@ void YapHash::calcHash(const Audio& audio, MelFb melBank, Parameter *param)
     }
 #else    
     // MFCC => LN + DCT
-    Fw64f *pMel = fwsMalloc_64f(melSpec.rows);
-    Fw64f *pTmp = fwsMalloc_64f(mfccCoeffs);
+    Ipp64f *pMel = ippsMalloc_64f(melSpec.rows);
+    Ipp64f *pTmp = ippsMalloc_64f(mfccCoeffs);
     
     // the real to real fft plan, Type II DCT
     fftw_plan p = fftw_plan_r2r_1d(mfccCoeffs, pMel, pTmp, FFTW_REDFT10 ,FFTW_ESTIMATE);    
     
     for (int i=0; i<melSpec.cols; i++) {
-        fwsConvert_32f64f(melSpec.data[i], pMel, melSpec.rows);
+        ippsConvert_32f64f(melSpec.data[i], pMel, melSpec.rows);
         // logarithmus naturalis
-        fwsLn_64f_I(pMel, stftCoeffs);
+        ippsLn_64f_I(pMel, stftCoeffs);
         // dct
         fftw_execute(p); 
         // copy all coeffs but C(0)
-        fwsConvert_64f32f(&pTmp[1], &mfcc.data[i][0], mfccCoeffs-1);
+        ippsConvert_64f32f(&pTmp[1], &mfcc.data[i][0], mfccCoeffs-1);
         
     }
     if (param->debugLevel > 2){
@@ -168,8 +168,8 @@ void YapHash::calcHash(const Audio& audio, MelFb melBank, Parameter *param)
     
     // free
     fftw_destroy_plan(p);
-	fwsFree(pMel);
-	fwsFree(pTmp);
+	ippsFree(pMel);
+	ippsFree(pTmp);
     
     
     // HASH - mfcc
@@ -236,7 +236,7 @@ void YapHash::calcHash(const Audio& audio, MelFb melBank, Parameter *param)
 
 // binary to decimal: vector € {0,1}, len < 32
 // corrected for len<=64 , knospe 2013
-Fw64u YapHash::bin2Dec(Fw32f *vector, int len)
+Ipp64u YapHash::bin2Dec(Ipp32f *vector, int len)
 {
     unsigned long hash=0, zwei=0;
      // cout << len << endl;

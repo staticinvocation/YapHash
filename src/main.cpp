@@ -76,9 +76,9 @@ int main(int argc, char *argv[])
 		// create mel-filterbank
 		MelFb *melBank = new MelFb(param.windowSize, param.melCoeffs + 1, param.loCut, param.hiCut);
 
-		Fw64u timeStamp1;
+		Ipp64u timeStamp1;
 		if (param.debugLevel > 0)
-			timeStamp1 = fwGetCpuClocks();
+			timeStamp1 = ippGetCpuClocks();
 
 // calculate the hashvalues
 #ifdef WAVELASH
@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
 
 		if (param.debugLevel > 0)
 		{
-			Fw64u timeStamp2 = fwGetCpuClocks(); // get timestamp
-            const Fw64f MY_CLOCKS_PER_SEC = 2.4*1E9; // depends on system
+			Ipp64u timeStamp2 = ippGetCpuClocks(); // get timestamp
+            const Ipp64f MY_CLOCKS_PER_SEC = 2.4*1E9; // depends on system
 			cout << "<INFO> Time elapsed: " << (timeStamp2 - timeStamp1)/MY_CLOCKS_PER_SEC << "s" << endl;
 		}
         // (2.4 * 1E9)

@@ -29,13 +29,12 @@
 #ifndef _AUDIO_H_
 #define _AUDIO_H_
 
-#include "fwBase.h"
-#include "fwSignal.h"
+#include <ipp/ipp.h>
 #include "Wave.h"
 #include "parseConfig.h"
 
 
-void preEmphasize(Fw32f *samples, int len, Fw32f preemphasisFactor);
+void preEmphasize(Ipp32f *samples, int len, Ipp32f preemphasisFactor);
 
 class Audio{
     
@@ -72,10 +71,10 @@ public:
     
     double sampleRate() const {return fs;}
     int length() const {return len;}
-    Fw32f* samples() const {return samples32f;}
+    Ipp32f* samples() const {return samples32f;}
     
 private:
-    Fw32f *samples32f; // pointer to samples
+    Ipp32f *samples32f; // pointer to samples
     int len; // number of samples
     //int ID;
     int fs;

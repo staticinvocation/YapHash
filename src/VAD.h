@@ -24,7 +24,7 @@
 #ifndef _VAD_H_
 #define _VAD_H_
 
-#include "fwSignal.h"
+#include <ipp/ipp.h>
 
 /**
  * calculate energy of each frame and writes energy vector to first arg
@@ -74,7 +74,7 @@ int cutVad_I(double *data, int *dataLen, int threshold);
  * @param threshold energy threshold of audio
  * @return zero if no error
  */
-int cutACFVad_I(Fw32f *data, int *dataLen, int threshold);
+int cutACFVad_I(Ipp32f *data, int *dataLen, int threshold);
 
 /**
  * Voice activity detection based on autocorrelation
@@ -83,7 +83,7 @@ int cutACFVad_I(Fw32f *data, int *dataLen, int threshold);
  * @param threshold energy threshold of audio
  * @return index of first window to use for processing
  */
-int AutocorrelationVad(Fw32f *data, int dataLen, int threshold);
+int AutocorrelationVad(Ipp32f *data, int dataLen, int threshold);
 
 
 #endif

@@ -161,23 +161,31 @@ int cutVad_I(double *data, int *dataLen, int threshold)
 /*
  * Voice activity detection based on autocorrelation
  */
-int AutocorrelationVad(Fw32f *data, int dataLen, int threshold)
+int AutocorrelationVad(Ipp32f *data, int dataLen, int threshold)
 {  
     int i,j=0;
     int len = getNoOfWindows(dataLen, ACF_WINDOWSIZE, ACF_STEPSIZE);
     int idx = -1; // return error -1 when not finding any valuable data
     
-    Fw32f *c = fwsMalloc_32f(len); 
-    Fw32f *acf = fwsMalloc_32f(ACF_WINDOWSIZE-1);
-    
+    Ipp32f *c = ippsMalloc_32f(len); 
+    Ipp32f *acf = ippsMalloc_32f(ACF_WINDOWSIZE-1);
+    IppEnum funCfg = (IppEnum)(ippAlgAuto|ippsNormB);
+    Ipp8u *pBuffer;
+    int bufSize = 0;
+    IppStatus status = ippsAutoCorrNormGetBufferSize(ACF_WINDOWSIZE, ACF_WINDOWSIZE, ipp32f, funCfg, &bufSize);
+    pBuffer = ippsMalloc_8u( bufSize );
+
     // windowing & sum + calc AKF for each window
     for (i = j = 0; i + ACF_WINDOWSIZE < dataLen; i += ACF_STEPSIZE, j++) 
     {
-        fwsAutoCorr_32f(&data[i], ACF_WINDOWSIZE, acf, ACF_WINDOWSIZE-1);
-        fwsDivC_32f_I((1 + acf[0]), acf, ACF_WINDOWSIZE-1); // norm by energy
-        fwsMax_32f(&acf[10], ACF_WINDOWSIZE-10, &c[j]); // take maximum from 0 to ACF SIZE/2 - 3 
+        ippsAutoCorrNorm_32f(&data[i], ACF_WINDOWSIZE, acf, ACF_WINDOWSIZE-1, funCfg, pBuffer);
+        ippsDivC_32f_I((1 + acf[0]), acf, ACF_WINDOWSIZE-1); // norm by energy
+        ippsMax_32f(&acf[10], ACF_WINDOWSIZE-10, &c[j]); // take maximum from 0 to ACF SIZE/2 - 3 
     }
         
+    ippsFree( pBuffer );
+
+
     float thresh = threshold/100.0f;
     
 	for (int i=0; i<len-3; i++) 
@@ -187,24 +195,24 @@ int AutocorrelationVad(Fw32f *data, int dataLen, int threshold)
 				if (c[i+2] > (thresh)) {
 					idx = (i*ACF_STEPSIZE);	
                     // free memory
-                    fwsFree(acf);
-                    fwsFree(c);
+                    ippsFree(acf);
+                    ippsFree(c);
                     return idx;
 				}
 			}
 		}
 	}
     if (acf) 
-        fwsFree(acf);
+        ippsFree(acf);
     if (c) 
-        fwsFree(c);
+        ippsFree(c);
     return idx;
 }
 
 /*
  * Voice activity detection based on autocorrelation, inplace operation
  */
-int cutACFVad_I(Fw32f *data, int *dataLen, int threshold)
+int cutACFVad_I(Ipp32f *data, int *dataLen, int threshold)
 {
     int idx = AutocorrelationVad(data, *dataLen, threshold);
     
@@ -222,12 +230,12 @@ int cutACFVad_I(Fw32f *data, int *dataLen, int threshold)
     {
         if (len > SAMPLE_RATE * WAV_LEN) // more than 6 seconds of audio after VAD
         {
-            memmove(data, &data[idx], SAMPLE_RATE * WAV_LEN *sizeof(Fw32f));
+            memmove(data, &data[idx], SAMPLE_RATE * WAV_LEN *sizeof(Ipp32f));
             *dataLen = SAMPLE_RATE * WAV_LEN;
         }
         else // less than 6 seconds left
         {
-            memmove(data, &data[idx], len *sizeof(Fw32f));
+            memmove(data, &data[idx], len *sizeof(Ipp32f));
             *dataLen = len;
            // cout << "Shorter than 6s" << endl;
         }

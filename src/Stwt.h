@@ -38,7 +38,6 @@
 
 
 #include <math.h>
-#include <gsl/gsl_wavelet.h>
 
 
 
@@ -49,10 +48,10 @@ class Stwt
 		Stwt(const Audio& rAudio, int WindowSize, int FeedRate, int J, std::string nm, size_t member, int debugLevel);
 		/// destructor.
 	    ~Stwt();
-	    /// short time wavelet transformation for each window is stored here (definition: mSpectrogramm[NoOfWindows][FwtLen]).
-	    Fw32f** mSpectrogramm;
+	    /// short time wavelet transformation for each window is stored here (definition: mSpectrogramm[NoOfWindows][IpptLen]).
+	    Ipp32f** mSpectrogramm;
 	    /// $N=2^{\lceil\log_{2}(L)\rceil}$
-	    int mFwtLen;
+	    int mIpptLen;
 	    /// Number of frames
 	    int mNoOfWindows;
 	    /// J-Level DWT
@@ -87,10 +86,10 @@ class Stwt
 	     * @param pInAudio audio material.
 	     * @param pWindowedAudio result.
 	     * @param pHamming pre calculated Hamming window: window(n)=\left\{\begin{array}{ll}0.54-0.46\cdot\cos\left(\frac{2\pi n}{N-1}\right),&0\leq n\leq N-1\\0,&\text{else}\end{array}\right.
-	     * @param FwtLen wavelet transform length.
+	     * @param IpptLen wavelet transform length.
 	     * @param WindowSize window size.
 	     */
-	    void CopyConvertAndMultiply(float* pInAudio, double* pWindowedAudio, double* pHamming, int FwtLen, int WindowSize);
+	    void CopyConvertAndMultiply(float* pInAudio, double* pWindowedAudio, double* pHamming, int IpptLen, int WindowSize);
 };
 
 #endif /* STWT_H_ */

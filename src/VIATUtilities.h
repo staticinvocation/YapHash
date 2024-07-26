@@ -31,7 +31,6 @@
 //#include <boost/asio.hpp>
 #include "Array2d_32f.h"
 #include "Stft.h"
-#include "Stwt.h"
 #include "melFB.h"
 
 /**
@@ -103,7 +102,7 @@ int debugStftToCSV(std::string fileName, Stft *stft);
  * @param stwt
  * @return
  */
-int debugStwtToCSV(std::string fileName, Stwt *stwt);
+//int debugStwtToCSV(std::string fileName, Stwt *stwt);
 
 /**
  *	returns length of fft aka next power of 2

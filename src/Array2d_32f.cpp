@@ -27,9 +27,9 @@
 Array2d_32f::Array2d_32f(int x, int y)
 {
     // multidimensional array
-    data = new Fw32f *[x]; // alloc some pointers ...
+    data = new Ipp32f *[x]; // alloc some pointers ...
     for (int i = 0; i < x ; i++) 
-        data[i] = new Fw32f[y]; // ... and alloc an array for each pointer   
+        data[i] = new Ipp32f[y]; // ... and alloc an array for each pointer   
     // the destructor should know the number of columns
     cols = x;
     rows = y;

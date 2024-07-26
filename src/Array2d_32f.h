@@ -25,7 +25,7 @@
 #ifndef _ARRAY_32f_H_
 #define _ARRAY_32f_H_
 
-#include "fwBase.h"
+#include <ipp/ipp.h>
 
 class Array2d_32f{
     
@@ -36,8 +36,7 @@ public:
     // Destruktor
     ~Array2d_32f();
     // the data
-    //Ipp32f **data;
-    Fw32f **data;
+    Ipp32f **data;
     int cols;
     int rows;
 };

@@ -215,6 +215,7 @@ int debugStftToCSV(std::string fileName, Stft *stft)
     return 0;    
 }
 
+/*
 int debugStwtToCSV(std::string fileName, Stwt *stwt)
 {
 
@@ -223,17 +224,17 @@ int debugStwtToCSV(std::string fileName, Stwt *stwt)
 
     // write data
     int i, j ;
-    for (i = 0; i < stwt->mNoOfWindows; i++)
+    for (i = 0; i < stwt->NoOfWindows; i++)
     {
-    	for (j = 0; j < stwt->mFwtLen; j++)
+    	for (j = 0; j < stwt->fftLen; j++)
     	{
-            csvFile << stwt->mSpectrogramm[i][j] << ",";
+            csvFile << stwt->spectrogramm[i][j] << ",";
         }
         csvFile << std::endl;
     }
     csvFile.close();
     return 0;
-}
+}*/
 
 int debugFbToCSV(std::string fileName, MelFb *bank)
 {

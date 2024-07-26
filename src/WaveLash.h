@@ -33,9 +33,7 @@
 #include <stdlib.h>
 #endif
 
-#include "fwBase.h"
-#include "fwSignal.h"
-
+#include <ipp/ipp.h>
 #include "parseConfig.h"
 #include "Array2d_32f.h"
 #include "Audio.h"
@@ -97,7 +95,7 @@ class WaveLash
 		 * @param result 2D array: result[NoOfWindows, HashLength].
 		 * @param stwt the wavelet coefficients per frame.
 		 */
-		void CalculateVariance(Fw32f ***result, Stwt &stwt);
+		void CalculateVariance(Ipp32f ***result, Stwt &stwt);
 		/**
 		 * Calculate the zero crossing rate per frame.
 		 * Zero Crossing Rate for each frame $m$:\\
@@ -108,7 +106,7 @@ class WaveLash
 		 * @param result 1D array: result[NoOfWindows]
 		 * @param stwt the wavelet coefficients per frame.
 		 */
-		void CalculateZeroCrossingRate(Fw32f **result, Stwt &stwt, int debugLevel);
+		void CalculateZeroCrossingRate(Ipp32f **result, Stwt &stwt, int debugLevel);
 };
 
 #endif /* WAVELASH_H_ */

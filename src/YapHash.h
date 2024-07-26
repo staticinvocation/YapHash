@@ -27,8 +27,7 @@
 #ifndef ViatFeatureExtractor_yapHash_h
 #define ViatFeatureExtractor_yapHash_h
 
-#include "fwBase.h"
-#include "fwSignal.h"
+#include <ipp/ipp.h>
 #include "parseConfig.h"
 #include "Array2d_32f.h"
 #include "Audio.h"
@@ -69,7 +68,7 @@ private:
      * @param len length of vector
      * @return decimal value
      */
-    Fw64u bin2Dec(Fw32f *vector, int len);
+    Ipp64u bin2Dec(Ipp32f *vector, int len);
 };
 
 #endif

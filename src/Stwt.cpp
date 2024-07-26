@@ -28,7 +28,7 @@
 #define ELEMENT(a,stride,i) ((a)[(stride)*(i)])
 
 Stwt::Stwt(const Audio& rAudio, int WindowSize, int FeedRate, int J, std::string nm, size_t member, int debugLevel) :
-		mSpectrogramm(NULL), mFwtLen(0), mNoOfWindows(0), mJ(J), mNm(nm), mMember(member), mdebugLevel(debugLevel)
+		mSpectrogramm(NULL), mIpptLen(0), mNoOfWindows(0), mJ(J), mNm(nm), mMember(member), mdebugLevel(debugLevel)
 {
 	this->CalcStwt(rAudio, WindowSize, FeedRate);
 }
@@ -48,28 +48,28 @@ int Stwt::CalcStwt(const Audio& rAudio, int WindowSize, int FeedRate)
 	// calculate dimension / num of columns
 	mNoOfWindows = (rAudio.length() - (WindowSize - FeedRate)) / FeedRate;
 
-	int FwtOrder;
+	int IpptOrder;
 	int i, j;
 
 	// calc fwt length => next power of 2
-	FwtOrder = ceil(logf(WindowSize) / logf(2.0f));
-	mFwtLen = 1 << FwtOrder;
+	IpptOrder = ceil(logf(WindowSize) / logf(2.0f));
+	mIpptLen = 1 << IpptOrder;
     
     if (mdebugLevel > 2)
 	{
 		
-        std::cout << "<INFO> FwtLength=" << mFwtLen << std::endl;
+        std::cout << "<INFO> IpptLength=" << mIpptLen << std::endl;
         std::cout << "<INFO> NoOfWindows=" << mNoOfWindows << std::endl;
 
 	}
 
 	// alloc multidimensional array
-	mSpectrogramm = new Fw32f *[mNoOfWindows]; // alloc some pointers ...
+	mSpectrogramm = new Ipp32f *[mNoOfWindows]; // alloc some pointers ...
 	for (int i = 0; i < mNoOfWindows; i++)
-		mSpectrogramm[i] = new Fw32f[mFwtLen]; // ... and alloc an array for each pointer
+		mSpectrogramm[i] = new Ipp32f[mIpptLen]; // ... and alloc an array for each pointer
 
 	// allocate FrameBuffer for real audio data of each window
-	double* FrameBuffer = (double*) malloc(mFwtLen * sizeof(double));
+	double* FrameBuffer = (double*) malloc(mIpptLen * sizeof(double));
 
 	// pre-calc Hamming window
 	double* Hamming = (double*) malloc(WindowSize * sizeof(double));
@@ -93,22 +93,22 @@ int Stwt::CalcStwt(const Audio& rAudio, int WindowSize, int FeedRate)
 	}
 
 	w = gsl_wavelet_alloc(nm, mMember);
-	work = gsl_wavelet_workspace_alloc(mFwtLen);
+	work = gsl_wavelet_workspace_alloc(mIpptLen);
     
     
 	// calc fwt for each window j
-	for (i = j = 0; i + mFwtLen < rAudio.length(); i += FeedRate, j++)
+	for (i = j = 0; i + mIpptLen < rAudio.length(); i += FeedRate, j++)
 	{
-		this->CopyConvertAndMultiply(&rAudio.samples()[i], FrameBuffer, Hamming, mFwtLen, WindowSize);
+		this->CopyConvertAndMultiply(&rAudio.samples()[i], FrameBuffer, Hamming, mIpptLen, WindowSize);
         
         if (mJ >0) {
-		  for (int z = mFwtLen; z >= mFwtLen/(int)pow(2.0,(double)(mJ - 1)); z >>= 1) {
+		  for (int z = mIpptLen; z >= mIpptLen/(int)pow(2.0,(double)(mJ - 1)); z >>= 1) {
 			 dwt_step(w, FrameBuffer, 1, z, gsl_wavelet_forward, work);
          
           }
         }
-		for (int a = 0; a < mFwtLen; a++)
-			mSpectrogramm[j][a] = (Fw32f) FrameBuffer[a];
+		for (int a = 0; a < mIpptLen; a++)
+			mSpectrogramm[j][a] = (Ipp32f) FrameBuffer[a];
 	}
 
 	gsl_wavelet_free(w);
@@ -121,9 +121,9 @@ int Stwt::CalcStwt(const Audio& rAudio, int WindowSize, int FeedRate)
 }
 
 // copy with padding (if fftLen > windowSize), multiply with vector (hammming-window) and convert to double
-void Stwt::CopyConvertAndMultiply(float* pInAudio, double* pWindowedAudio, double* pHamming, int FwtLen, int WindowSize)
+void Stwt::CopyConvertAndMultiply(float* pInAudio, double* pWindowedAudio, double* pHamming, int IpptLen, int WindowSize)
 {
-	for (int i = 0; i < FwtLen; i++)
+	for (int i = 0; i < IpptLen; i++)
 	{
 		if (i > WindowSize)
 			pWindowedAudio[i] = 0;

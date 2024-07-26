@@ -24,8 +24,8 @@
 //#include "VIATUtilities.h"
 #include <stdlib.h>
 
-#define FFTW // prefer FFTW over IPP
-
+#define M_PI 3.14159265358979323846
+#define FFTW
 using namespace std;
 
 Stft::Stft(const Audio& audio, int windowSize, int feedRate)
@@ -61,9 +61,9 @@ int Stft::calcStft(const Audio &audio, int windowSize, int feedRate)
     fftw_plan p;
     
     // alloc multidimensional array
-    spectrogramm = new Fw32f *[NoOfWindows]; // alloc some pointers ...
+    spectrogramm = new Ipp32f *[NoOfWindows]; // alloc some pointers ...
     for (int i = 0; i < NoOfWindows ; i++) 
-        spectrogramm[i] = new Fw32f[fftLen/2]; // ... and alloc an array for each pointer    
+        spectrogramm[i] = new Ipp32f[fftLen/2]; // ... and alloc an array for each pointer    
     
     // alloc framebuffer for real audio data of each window
     frame_buffer = (double*) fftw_malloc(fftLen * sizeof(double));
@@ -73,7 +73,7 @@ int Stft::calcStft(const Audio &audio, int windowSize, int feedRate)
     // the real to complex fft plan
     p = fftw_plan_dft_r2c_1d(fftLen, frame_buffer, spectrum, FFTW_ESTIMATE );    
     
-  //  Fw64u timeStamp1 = fwGetCpuClocks();      
+  //  Ipp64u timeStamp1 = fwGetCpuClocks();      
     // pre-calc hamming window
     double* hamming = (double*)malloc(windowSize * sizeof(double)); 
     for(int i=0; i<windowSize; i++)
@@ -92,7 +92,7 @@ int Stft::calcStft(const Audio &audio, int windowSize, int feedRate)
         PowerSpectrum(spectrogramm[j], spectrum, fftLen);
     }
     // get timestamp
- //   Fw64u timeStamp2 = fwGetCpuClocks();
+ //   Ipp64u timeStamp2 = fwGetCpuClocks();
  //   cout << (timeStamp2 - timeStamp1)/(2.4*1E9) << endl;
     
     fftw_destroy_plan(p);
@@ -121,7 +121,6 @@ int Stft::calcStft(const Audio &audio, int windowSize, int feedRate)
     // Ipp32fc *pTmp = (Ipp32fc*)ippsMalloc_32f((fftLen)+2); 
     Ipp32fc *pTmp = ippsMalloc_32fc((fftLen)+2); 
     
-    Fw64u timeStamp1 = fwGetCpuClocks();
     // calc FFT for each window
     for (i = j = 0; i + windowSize < audio.length(); i += feedRate, j++) 
     { 
@@ -132,14 +131,13 @@ int Stft::calcStft(const Audio &audio, int windowSize, int feedRate)
 		ippsWinHamming_32f_I(frame_buffer, windowSize);
         //WinHamming_I((double*)frame_buffer, windowSize);
         
-        ippsFFTFwd_RToCCS_32f(frame_buffer, (Ipp32f*)pTmp ,pFFTSpec, 0);
+        ippsFFTIppd_RToCCS_32f(frame_buffer, (Ipp32f*)pTmp ,pFFTSpec, 0);
         //
         ippsPowerSpectr_32fc((Ipp32fc*)pTmp, spectrogramm[j], fftLen/2+1);
         //  ippsReal_32fc((Ipp32fc*)pTmp, spectrogramm[j], fftLen/2);        // cout << j << " " << i << endl;
     }
     // get timestamp
-    Fw64u timeStamp2 = fwGetCpuClocks();
-    cout << (timeStamp2 - timeStamp1)/(2.4*1E9) << endl;
+
     
     // free mem
     ippsFree(frame_buffer);
@@ -171,9 +169,9 @@ void CopyConvertAndMultiply(float *inAudio, double* windowedAudio, double* hammi
         else 
             windowedAudio[i] = inAudio[i] * hamming[i];
     }
-//      fwsZero_64f(windowedAudio, windowSize);
-//      fwsConvert_32f64f(inAudio, windowedAudio, windowSize);
-//      fwsMul_64f_I(hamming, windowedAudio, windowSize);
+//      ippsZero_64f(windowedAudio, windowSize);
+//      ippsConvert_32f64f(inAudio, windowedAudio, windowSize);
+//      ippsMul_64f_I(hamming, windowedAudio, windowSize);
 }
 
 
@@ -185,7 +183,7 @@ void WinHamming_I(double* data, int length)
 }
 
 
-void PowerSpectrum(Fw32f* power_spectrum, fftw_complex* spectrum, int N)
+void PowerSpectrum(Ipp32f* power_spectrum, fftw_complex* spectrum, int N)
 {
     power_spectrum[0] = spectrum[0][0] * spectrum[0][0];
     for (int k = 1; k < (N+1)/2; ++k)  /* (k < N/2 rounded up) */

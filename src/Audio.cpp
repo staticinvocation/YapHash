@@ -36,7 +36,7 @@ using namespace std;
 /**
  * In-place pre-emphasize audio
  */
-void preEmphasize(Fw32f *samples, int len, Fw32f preemphasisFactor)
+void preEmphasize(Ipp32f *samples, int len, Ipp32f preemphasisFactor)
 {
     // simple hi pass filter
     for (size_t n=1; n<len; n++)
@@ -46,14 +46,14 @@ void preEmphasize(Fw32f *samples, int len, Fw32f preemphasisFactor)
 /*
  *   declicker to reduce spikes in audio data
  */
-void deClicker(Fw32f *samples, int len, int threshold)
+void deClicker(Ipp32f *samples, int len, int threshold)
 {
     // mean of absolute wave data
-    Fw32f mean;
-    Fw32f *tmpAbs = fwsMalloc_32f(len);
-    fwsAbs_32f(samples, tmpAbs, len);
-    fwsMean_32f(tmpAbs, len, &mean, fwAlgHintFast);
-    fwsFree(tmpAbs);
+    Ipp32f mean;
+    Ipp32f *tmpAbs = ippsMalloc_32f(len);
+    ippsAbs_32f(samples, tmpAbs, len);
+    ippsMean_32f(tmpAbs, len, &mean, ippAlgHintFast);
+    ippsFree(tmpAbs);
     
     // declicker, minimize clicks and pops higher than mean
     for (int i=0; i < len; i++) {
@@ -98,8 +98,8 @@ Audio::Audio(const char *filePath, int thresholdVAD, int thresholdDeclicker, int
 
     
     // convert to float and divide by 2^15
-    Fw32f *tmpWav = fwsMalloc_32f(len);
-    fwsConvert_16s32f_Sfs(wave.data, tmpWav, len, 15);  
+    Ipp32f *tmpWav = ippsMalloc_32f(len);
+    ippsConvert_16s32f_Sfs(wave.data, tmpWav, len, 15);  
     
     // declicker reduces short spikes in audio data
     deClicker(tmpWav, len, thresholdDeclicker);
@@ -108,13 +108,13 @@ Audio::Audio(const char *filePath, int thresholdVAD, int thresholdDeclicker, int
     preEmphasize(tmpWav, len, (preEmphasizeFactor/100.0)); 
     
     // normalize to +/- 1
-    Fw32f pMax = 0;
-    fwsMax_32f(tmpWav, len, &pMax);
-    Fw32f pMin = 0;
-    fwsMin_32f(tmpWav, len, &pMin);
+    Ipp32f pMax = 0;
+    ippsMax_32f(tmpWav, len, &pMax);
+    Ipp32f pMin = 0;
+    ippsMin_32f(tmpWav, len, &pMin);
     pMax = max(pMax, pMin * (-1));
     if (pMax != 0) 
-        fwsDivC_32f_I(pMax, tmpWav, len);
+        ippsDivC_32f_I(pMax, tmpWav, len);
     
     // Voice activity detection / input alignement
     cutACFVad_I(tmpWav, &len, thresholdVAD);
@@ -122,8 +122,8 @@ Audio::Audio(const char *filePath, int thresholdVAD, int thresholdDeclicker, int
     
     
     // copy samples and convert to float32
-    samples32f = fwsMalloc_32f(len);
-    fwsCopy_32f(tmpWav, samples32f, len);   
+    samples32f = ippsMalloc_32f(len);
+    ippsCopy_32f(tmpWav, samples32f, len);   
     
     if (debugLevel > 2){
         
@@ -131,7 +131,7 @@ Audio::Audio(const char *filePath, int thresholdVAD, int thresholdDeclicker, int
         cout << "<INFO> Wrote processed audio data to file debugPostAudio.csv" << endl;
     }
     delete wave.data;
-    fwsFree(tmpWav);
+    ippsFree(tmpWav);
 }
 
 Audio::Audio(double *waveSamples, int waveLength)
@@ -140,8 +140,8 @@ Audio::Audio(double *waveSamples, int waveLength)
     fs = 8000;
     
     // copy samples and convert to float32
-    samples32f = fwsMalloc_32f(waveLength);
-    fwsConvert_64f32f(waveSamples, samples32f, waveLength);
+    samples32f = ippsMalloc_32f(waveLength);
+    ippsConvert_64f32f(waveSamples, samples32f, waveLength);
     
    
 }
@@ -149,7 +149,7 @@ Audio::Audio(double *waveSamples, int waveLength)
 // Destruktor
 Audio::~Audio()
 {
-    fwsFree(samples32f);
+    ippsFree(samples32f);
 }
 
 
